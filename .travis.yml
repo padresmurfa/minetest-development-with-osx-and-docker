@@ -13,9 +13,9 @@ addons:
       - luajit
 
 install:
-  - git remote add upstream https://github.com/padresmurfa/minetest -t master -f
+  - git remote add upstream https://github.com/${GITHUB_USERNAME}/minetest -t master -f
   - git checkout upstream/master
-  - git clone --depth=1 https://github.com/padresmurfa/minetest_game games/minetest_game
+  - git clone --depth=1 https://github.com/${GITHUB_USERNAME}/minetest_game games/minetest_game
 
 script:
   - cmake
@@ -26,20 +26,23 @@ script:
   - make package
 
 before_deploy:
-  - git remote set-url origin https://${GITHUB_OAUTH_TOKEN}@github.com/padresmurfa/minetest
+  - git remote set-url origin https://${GITHUB_OAUTH_TOKEN}@github.com/${GITHUB_USERNAME}/minetest
   - git remote set-branches --add origin master
   - git fetch origin
   - git push origin upstream/master:master
-  - export TRAVIS_TAG=$(date +'%Y-%m-%d')
+  - git config --local user.name "${GITHUB_USERNAME}"
+  - git config --local user.email "${GITHUB_USEREMAIL}"
+  - export TRAVIS_TAG=$(date +'%Y-%m-%d-%H%M%S')
+  - git tag $TRAVIS_TAG
 
 deploy:
   provider: releases
-  name: ${TRAVIS_TAG}
-  token: ${GITHUB_OAUTH_TOKEN}
   skip_cleanup: true
+  name: ${TRAVIS_TAG}
+  api_key: ${GITHUB_OAUTH_TOKEN}
   file_glob: true
   file: "*.zip"
   overwrite: true
   target_commitish: master
   on:
-    branch: builds-osx
+    branch: build-osx

@@ -27,9 +27,24 @@ You have now built Minetest, and are ready to start coding or playing
     be immediately available in the container
 3. when you change code, build it in the docker container, not in the host
 
-## Running the Client
+## Setting up Travis CI
 
-1. install VirtualBox
-2. create an Ubuntu 16.04 machine, 64-bit
-3. copy the build output, source/minetest/bin/minetest, to the 'shared_with_linux_client_vm' folder
-4. 
+1. fork the following repos on git to your own github account:
+  * this repository 
+  * minetest/minetest
+  * minetest/minetest_game
+2. Go to `https://travisci.org`, select your profile picture, choose `Settings`
+  * Now choose Repositories, activate the `GitHub Apps integration`, and give it access to your copy of the
+    aforementioned repositories
+3. Go to `Github`, select your profile picture, choose `Settings`
+4. Select Personal access tokens, and create a new token for `Travis CI for Minetest`
+  * Likely you can entrust Travis CI with most of your non-org capabilities. Feel free to experiment with giving
+    Travis a more restrictively authorized token if you would like to.
+5. Go to Travis CI, find your copy of this repository, and configure the following environment variables:
+  * GITHUB_OAUTH_TOKEN: should contain the value of the Github PAT that you created, above.
+  * GITHUB_USERNAME: should contain your Github username
+  * GITHUB_USEREMAIL: should contain your Github email address
+6. trigger an initial build manually
+
+## Building the Client
+
