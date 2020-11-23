@@ -1,0 +1,10 @@
+######################################################
+# BUILD Terasology
+######################################################
+
+pushd ~/build/minetest >> /dev/null
+
+cmake . -DRUN_IN_PLACE=TRUE
+make -j$(nproc)
+
+popd >> /dev/null

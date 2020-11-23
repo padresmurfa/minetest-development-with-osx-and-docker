@@ -1,0 +1,10 @@
+#!/bin/bash
+
+USER=$(whoami)
+
+docker build \
+  --build-arg USERNAME=$USER \
+  --build-arg UID=$UID \
+  --tag padresmurfa/minetest-development-with-osx-and-docker \
+  --file ./Dockerfile \
+  .
