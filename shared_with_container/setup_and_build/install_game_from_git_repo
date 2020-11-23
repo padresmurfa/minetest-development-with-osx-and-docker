@@ -15,24 +15,27 @@ GAMEID=$1
 GITURL=$2
 
 # if this is the first game we're installing, then the games directory needs to be created
-if [[ ! -d ~/shared_with_host/source/games ]]; then
-    mkdir ~/shared_with_host/source/games
+if [[ ! -d "$HOME/shared_with_host/source/games" ]]; then
+    mkdir "$HOME/shared_with_host/source/games"
 fi
 
 # fetch the git repo, and install it in our games directory
-if [[ ! -d ~/shared_with_host/source/games/$GAMEID ]]; then
-    git clone --depth 1 $GITURL ~/shared_with_host/source/games
+if [[ ! -d "$HOME/shared_with_host/source/games/$GAMEID" ]]; then
+    git clone --depth 1 $GITURL "$HOME/shared_with_host/source/games/$GAMEID"
 fi
 
 # create a symlink in the server's games directory
-if [[ ! -L ~/shared_with_host/source/minetest/games/$GAMEID ]]; then
-    pushd ~/shared_with_host/source/minetest/games >> /dev/null
-    ln -s ~/shared_with_host/source/games/$GAMEID $GAMEID
+if [[ ! -L "$HOME/shared_with_host/source/minetest/games/$GAMEID" ]]; then
+    pushd "$HOME/shared_with_host/source/minetest/games" >> /dev/null
+    ln -s "$HOME/shared_with_host/source/games/$GAMEID" $GAMEID
     popd >> /dev/null
 fi
 
 # add it to .gitignore in the server's games directory
-SYMLINKED_IF_NOT_EMPTY=$(grep -e "^$GAMEID\$" ~/shared_with_host/source/minetest/games/.gitignore)
-if [[ -z $SYMLINKED_IF_NOT_EMPTY ]]; then
-    echo "$GAMEID" >> ~/shared_with_host/source/minetest/games/.gitignore
+SYMLINKED_IF_NOT_EMPTY=""
+if [[ -f "$HOME/shared_with_host/source/minetest/games/.gitignore" ]]; then
+  SYMLINKED_IF_NOT_EMPTY=$(grep -e "^$GAMEID\$" "$HOME/shared_with_host/source/minetest/games/.gitignore")
+fi
+if [[ -z "$SYMLINKED_IF_NOT_EMPTY" ]]; then
+    echo "$GAMEID" >> "$HOME/shared_with_host/source/minetest/games/.gitignore"
 fi

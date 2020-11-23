@@ -12,11 +12,11 @@ set -o pipefail
 ############################################################################################
 
 # fetch the minetest codebase from git
-if [[ ! -d ~/shared_with_host/source/minetest ]]; then
-    pushd ~/shared_with_host/source >> /dev/null
+if [[ ! -d "$HOME/shared_with_host/source/minetest" ]]; then
+    pushd "$HOME/shared_with_host/source" >> /dev/null
     git clone --depth 1 https://github.com/minetest/minetest.git
     popd >> /dev/null
 fi
 
 # install minetest_game
-~/shared_with_host/setup_and_build/install_game_from_git_repo minetest_game https://github.com/minetest/minetest_game.git
+"$HOME/shared_with_host/setup_and_build/install_game_from_git_repo" minetest_game https://github.com/minetest/minetest_game.git

@@ -22,8 +22,8 @@ sudo service rsyslog start
 #   ownership of shared volumes
 ############################################################################################
 
-sudo chown davidbrandt:davidbrandt ~/server_management/
-sudo chown davidbrandt:davidbrandt ~/setup_and_build/
+sudo chown davidbrandt:davidbrandt ~/shared_with_host/server_management/
+sudo chown davidbrandt:davidbrandt ~/shared_with_host/setup_and_build/
 
 ############################################################################################
 # STAY RUNNING

@@ -81,7 +81,7 @@ RUN sudo gem install mdless
 #   install a few scripts to get things started
 ############################################################################################
 
-COPY --chown=$USERNAME:$USERNAME copy_to_container/ /home/$USERNAME/copied_from_host/
+COPY --chown=$USERNAME:$USERNAME copy_to_container/ /home/$USERNAME/.copied_from_host/
 
 ############################################################################################
 # VOLUMES
@@ -104,4 +104,4 @@ WORKDIR /home/$USERNAME
 # registered in init.d.
 # To facilitate that, any necessary start-up actions for the container that are not part of
 # the docker image will be orchestrated from .start_docker_container.
-ENTRYPOINT ["/bin/bash", "-ci", "./copied_from_host/.start_docker_container"]
+ENTRYPOINT ["/bin/bash", "-ci", "./.copied_from_host/.start_docker_container"]

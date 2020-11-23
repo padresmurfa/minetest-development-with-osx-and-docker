@@ -27,4 +27,9 @@ You have now built Minetest, and are ready to start coding or playing
     be immediately available in the container
 3. when you change code, build it in the docker container, not in the host
 
- 
+## Running the Client
+
+1. install VirtualBox
+2. create an Ubuntu 16.04 machine, 64-bit
+3. copy the build output, source/minetest/bin/minetest, to the 'shared_with_linux_client_vm' folder
+4. 
