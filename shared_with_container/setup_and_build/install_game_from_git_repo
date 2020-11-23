@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+
+############################################################################################
+# GIT Repositories
+#   Minetest is stored on Github
+############################################################################################
+
+GAMEID=$1
+GITURL=$2
+
+# if this is the first game we're installing, then the games directory needs to be created
+if [[ ! -d ~/shared_with_host/source/games ]]; then
+    mkdir ~/shared_with_host/source/games
+fi
+
+# fetch the git repo, and install it in our games directory
+if [[ ! -d ~/shared_with_host/source/games/$GAMEID ]]; then
+    git clone --depth 1 $GITURL ~/shared_with_host/source/games
+fi
+
+# create a symlink in the server's games directory
+if [[ ! -L ~/shared_with_host/source/minetest/games/$GAMEID ]]; then
+    pushd ~/shared_with_host/source/minetest/games >> /dev/null
+    ln -s ~/shared_with_host/source/games/$GAMEID $GAMEID
+    popd >> /dev/null
+fi
+
+# add it to .gitignore in the server's games directory
+SYMLINKED_IF_NOT_EMPTY=$(grep -e "^$GAMEID\$" ~/shared_with_host/source/minetest/games/.gitignore)
+if [[ -z $SYMLINKED_IF_NOT_EMPTY ]]; then
+    echo "$GAMEID" >> ~/shared_with_host/source/minetest/games/.gitignore
+fi

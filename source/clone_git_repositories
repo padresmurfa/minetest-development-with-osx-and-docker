@@ -1,7 +1,0 @@
-######################################################
-# GIT Repository
-#   Terasology is stored in a git repo
-######################################################
-
-git clone --depth 1 https://github.com/minetest/minetest.git
-git clone --depth 1 https://github.com/minetest/minetest_game.git games/minetest_game

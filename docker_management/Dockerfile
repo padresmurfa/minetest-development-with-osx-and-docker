@@ -21,6 +21,7 @@ RUN apt-get update \
     rsyslog sudo \
     curl less wget zip unzip vim \
     git \
+    ruby \
     g++ make libc6-dev libirrlicht-dev cmake libbz2-dev libpng-dev libjpeg-dev \
       libxxf86vm-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev \
       libcurl4-gnutls-dev libfreetype6-dev zlib1g-dev libgmp-dev libjsoncpp-dev
@@ -66,14 +67,29 @@ RUN addgroup $USERNAME \
  && adduser --shell /bin/bash --uid $UID --ingroup $USERNAME $USERNAME \
  && usermod -aG sudo $USERNAME \
  && echo "$USERNAME     ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-USER $USERNAME
+USER $USERNAME:$USERNAME
+
+############################################################################################
+# MDLESS
+#   install mdless, a ruby gem that makes viewing Markdown more pleasant
+############################################################################################
+
+RUN sudo gem install mdless
 
 ############################################################################################
 # SCRIPTS
 #   install a few scripts to get things started
 ############################################################################################
 
-COPY --chown=$UID:$GID copy_to_container/ /home/$USERNAME/copied_from_host/
+COPY --chown=$USERNAME:$USERNAME copy_to_container/ /home/$USERNAME/copied_from_host/
+
+############################################################################################
+# VOLUMES
+#   create the mount-points in a fashion that is accessible to the USER
+############################################################################################
+
+RUN mkdir --mode 777 /home/$USERNAME/shared_with_host/ \
+ && chown $USERNAME:$USERNAME /home/$USERNAME/shared_with_host/
 
 ############################################################################################
 # INITIAL STATE

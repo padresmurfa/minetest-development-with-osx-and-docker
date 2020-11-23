@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+
+############################################################################################
+# START Minetest server, running devtest
+############################################################################################
+
+pushd ~/shared_with_host/source/minetest/bin >> /dev/null
+
+./minetestserver --gameid devtest
+
+popd >> /dev/null

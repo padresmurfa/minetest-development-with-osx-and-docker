@@ -1,8 +1,13 @@
 #!/bin/bash
 
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
 # determine the absolute directory name of source
-pushd ../source 2>&1 >> /dev/null
-SOURCE_DIRECTORY=$(pwd)
+pushd ../shared_with_container 2>&1 >> /dev/null
+SHARED_DIRECTORY=$(pwd)
 popd 2>&1 >> /dev/null
 
 user=$(whoami)
@@ -12,11 +17,12 @@ user=$(whoami)
 # ... removing it automatically when it is stopped
 # ... using a fixed name, minetest, for the running container
 # ... mounting the relevant git-repositories into the container
-# ... and selecting our docker image, which is named padresmurfa/minetest-development-with-osx-and-docker-image
+# ... and selecting our docker image, which is named minetest-development-with-osx-and-docker-image
 docker run \
   --detach --tty \
   --rm \
   --name minetest \
-  --volume $SOURCE_DIRECTORY/minetest:/home/$user/build/minetest \
-  --volume $SOURCE_DIRECTORY/games:/home/$user/build/games \
-  padresmurfa/minetest-development-with-osx-and-docker-image
+  --volume $SHARED_DIRECTORY/source:/home/$user/shared_with_host/source \
+  --volume $SHARED_DIRECTORY/server_management:/home/$user/shared_with_host/server_management \
+  --volume $SHARED_DIRECTORY/setup_and_build:/home/$user/shared_with_host/setup_and_build \
+  minetest-development-with-osx-and-docker-image

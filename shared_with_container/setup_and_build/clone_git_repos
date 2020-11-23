@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+
+############################################################################################
+# GIT Repositories
+#   Minetest is stored on Github
+############################################################################################
+
+# fetch the minetest codebase from git
+if [[ ! -d ~/shared_with_host/source/minetest ]]; then
+    pushd ~/shared_with_host/source >> /dev/null
+    git clone --depth 1 https://github.com/minetest/minetest.git
+    popd >> /dev/null
+fi
+
+# install minetest_game
+~/shared_with_host/setup_and_build/install_game_from_git_repo minetest_game https://github.com/minetest/minetest_game.git
