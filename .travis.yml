@@ -45,4 +45,4 @@ deploy:
   overwrite: true
   target_commitish: master
   on:
-    branch: build-osx
+    branch: master
