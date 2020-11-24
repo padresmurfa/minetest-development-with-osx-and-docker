@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+pushd $SCRIPT_DIR >> /dev/null
+
+############################################################################################
+# BREW dependencies
+############################################################################################
+brew bundle --file "$SCRIPT_DIR/.brewfile"
+
+############################################################################################
+# GIT Repositories
+############################################################################################
+
+function upsert_git_repository() {
+  local REPO_DIR=$1
+  local REPO_URL=$2
+
+  if [[ ! -d "./$REPO_DIR" ]]; then
+    echo "Cloning git repository: $REPO_URL"
+    git clone $REPO_URL
+  else
+    echo "Updating git repository: $REPO_URL"
+    pushd "./$REPO_DIR" >> /dev/null
+    git pull --no-rebase
+    popd >> /dev/null
+  fi
+}
+
+############################################################################################
+# GIT Repository: macos-virtualbox
+############################################################################################
+
+upsert_git_repository macos-virtualbox git@github.com:myspaghetti/macos-virtualbox.git
+
+############################################################################################
+# GIT Repository: xxd
+############################################################################################
+
+upsert_git_repository xxd git@github.com:padresmurfa/xxd.git
+pushd ./xxd >> /dev/null
+  make xxd
+popd >> /dev/null
+
+popd >> /dev/null
