@@ -1,6 +1,2 @@
 .idea
-shared_with_container/source/games
-shared_with_container/source/minetest
-mac_management/macos-virtualbox
-mac_management/xxd
-mac_management/.brewfile.lock.json
+virtual-machines

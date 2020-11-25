@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+USER=$(whoami)
+
+docker build \
+  --build-arg USERNAME="$USER" \
+  --build-arg UID="$UID" \
+  --tag minetest-development-with-osx-and-docker-image \
+  --file "$SCRIPT_DIR/Dockerfile" \
+  "$SCRIPT_DIR"

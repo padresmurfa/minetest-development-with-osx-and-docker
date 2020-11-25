@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+pushd "$SCRIPT_DIR/../../../virtual-machines/mac-build-machine" >> /dev/null
+
+    export macos_vm_vars_file="$SCRIPT_DIR/macos-virtualbox.conf"
+    export PATH="$PATH:$SCRIPT_DIR/xxd"
+
+    # see the following for details:
+    # https://en.wikibooks.org/wiki/VirtualBox/Setting_up_a_Virtual_Machine/Mac_OS_X
+    /usr/local/bin/bash "$SCRIPT_DIR/macos-virtualbox/macos-guest-virtualbox.sh prompt_delete_temporary_files"
+
+popd >> /dev/null
+

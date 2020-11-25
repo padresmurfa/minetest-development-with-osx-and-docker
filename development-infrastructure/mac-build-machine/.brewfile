@@ -1,0 +1,10 @@
+brew "bash"
+brew "coreutils"
+brew "dmg2img"
+brew "git"
+brew "gzip"
+brew "unzip"
+brew "wget"
+
+cask "virtualbox"
+cask "virtualbox-extension-pack"

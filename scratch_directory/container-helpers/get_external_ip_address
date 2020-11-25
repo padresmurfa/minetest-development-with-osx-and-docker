@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+############################################################################################
+# RSYNC DAEMON
+#   we allow the host to connect to us via rsync
+############################################################################################
+host -t A host.docker.internal | sed 's/host.docker.internal has address //g'
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+IS_RUNNING=$("$SCRIPT_DIR/info/is_docker_container_running")
+if [[ -n $IS_RUNNING ]]; then
+  docker stop minetest
+  echo "The 'minetest' container has been stopped"
+else
+  >&2 echo "The 'minetest' container was not running"
+  exit 1
+fi

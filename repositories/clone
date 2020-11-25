@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+# determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+############################################################################################
+# GIT REPOS
+#   install an initial version of the git repos, if this has not yet been done
+############################################################################################
+
+pushd ../source >> /dev/null
+
+"$SCRIPT_DIR/.maybe_clone_minetest_git_repo"
+"$SCRIPT_DIR/.maybe_install_game_from_git_repo" minetest_game https://github.com/minetest/minetest_game.git
+
+popd >> /dev/null

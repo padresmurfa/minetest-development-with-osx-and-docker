@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+
+############################################################################################
+# GIT Repositories
+#   Minetest is stored on Github
+############################################################################################
+
+GAMEID=$1
+GITURL=$2
+
+# if this is the first game we're installing, then the games directory needs to be created
+if [[ ! -d "./games" ]]; then
+    mkdir "./games"
+fi
+
+# fetch the git repo, and install it in our games directory
+if [[ ! -d "./games/$GAMEID" ]]; then
+    git clone --depth 1 "$GITURL" "./games/$GAMEID"
+fi
+

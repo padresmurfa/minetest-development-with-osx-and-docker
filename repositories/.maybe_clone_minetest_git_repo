@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+
+############################################################################################
+# GIT Repositories
+#   Minetest is stored on Github
+############################################################################################
+
+# fetch the minetest codebase from git
+if [[ ! -d "./minetest" ]]; then
+    git clone --depth 1 https://github.com/minetest/minetest.git
+fi
