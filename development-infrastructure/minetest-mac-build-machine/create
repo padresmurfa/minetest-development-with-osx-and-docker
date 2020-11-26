@@ -10,7 +10,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 "$SCRIPT_DIR/.setup"
 
-pushd "$SCRIPT_DIR/../../../virtual-machines/mac-build-machine" >> /dev/null
+pushd "$SCRIPT_DIR/../../virtual-machines/minetest-mac-build-machine" >> /dev/null
 
     export macos_vm_vars_file="$SCRIPT_DIR/macos_vm_vars.conf"
     export PATH="$PATH:$SCRIPT_DIR/xxd"
@@ -21,4 +21,4 @@ pushd "$SCRIPT_DIR/../../../virtual-machines/mac-build-machine" >> /dev/null
 
 popd >> /dev/null
 
-"$SCRIPT_DIR/.cleanup"
+echo "Automatic steps complete. Continue with manual installation steps, and when you are ready, shutdown the VM and run '$SCRIPT_DIR/cleanup' to delete temporary files"

@@ -38,7 +38,7 @@ function upsert_git_repository() {
 # GIT Repository: macos-virtualbox
 ############################################################################################
 
-upsert_git_repository macos-virtualbox git@github.com:myspaghetti/macos-virtualbox.git
+upsert_git_repository macos-virtualbox git@github.com:padresmurfa/macos-virtualbox.git
 
 ############################################################################################
 # GIT Repository: xxd
