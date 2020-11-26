@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+USERANDHOST=$("$SCRIPT_DIR/info/get_remote_user_and_host")
+
+POWERED_OFF=$("$SCRIPT_DIR/info/is_powered_off")
+if [[ $POWERED_OFF == "YES" ]]; then
+    echo ""
+fi
+
+KEYFILE="$HOME/.ssh/id_rsa_minetest_build_machine"
+
+ssh \
+ -F /dev/null \
+ -t \
+ -o UserKnownHostsFile=/dev/null \
+ -o StrictHostKeyChecking=no \
+ -o IdentitiesOnly=yes \
+ -o CheckHostIP=no \
+ -o LogLevel=ERROR \
+ -i "$KEYFILE" \
+ "$USERANDHOST"

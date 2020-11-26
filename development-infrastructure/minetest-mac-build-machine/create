@@ -21,4 +21,4 @@ pushd "$SCRIPT_DIR/../../virtual-machines/minetest-mac-build-machine" >> /dev/nu
 
 popd >> /dev/null
 
-echo "Automatic steps complete. Continue with manual installation steps, and when you are ready, shutdown the VM and run '$SCRIPT_DIR/cleanup' to delete temporary files"
+echo "Automatic steps complete. Continue with any manual installation steps described in the README.md file, and when you are ready to continue, shutdown the VM and run '$SCRIPT_DIR/cleanup' to delete temporary files"

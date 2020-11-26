@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+USERNAME=$(whoami)
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+HOSTNAME=$("$SCRIPT_DIR/get_hostname")
+
+function check_if_running() {
+    vboxmanage showvminfo "$HOSTNAME" | grep -c "running (since"
+}
+
+n=0
+until [ "$n" -ge 5 ]; do
+    STATUS=$(check_if_running)
+    if [[ $STATUS == "1" ]]; then
+        exit 0
+    fi
+    n=$((n+1))
+    sleep 3
+done
+
+exit 1

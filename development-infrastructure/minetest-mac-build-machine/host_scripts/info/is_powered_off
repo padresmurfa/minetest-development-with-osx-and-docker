@@ -7,6 +7,10 @@ set -o pipefail
 
 # Determine the directory this script resides in
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-HOSTNAME=$("$SCRIPT_NAME/get_hostname")
+HOSTNAME=$("$SCRIPT_DIR/get_hostname")
 
-host "$HOSTNAME" | sed 's/$HOSTNAME has address //g'
+if [[ "$(VBoxManage showvminfo "$HOSTNAME")" =~ State:[\ \t]*powered\ off ]]; then
+    echo "YES"
+else
+    echo "NO"
+fi

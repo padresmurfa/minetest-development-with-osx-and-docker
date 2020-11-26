@@ -9,7 +9,7 @@ set -o pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SOURCE_DIR="$SCRIPT_DIR/../../../source"
 
-USERNAME=$(whoami)
+USERANDHOST=$("$SCRIPT_DIR/info/get_remote_user_and_host")
 
 ############################################################################################
 # SYNC FILES TO BUILD
@@ -31,13 +31,11 @@ RSYNC_EXCLUDE=$(mktemp)
 list_uninteresting_files "$SOURCE_DIR/games/minetest_game" >> "$RSYNC_EXCLUDE"
 list_uninteresting_files "$SOURCE_DIR/minetest" >> "$RSYNC_EXCLUDE"
 
-MAC_BUILD_MACHINE_IPADDRESS=$($SCRIPT_DIR/info/get_build_machine_ipaddress)
-
 echo "Synchronizing files from '$SOURCE_DIR/' to '$HOME/minetest/'"
 time rsync --verbose --archive --safe-links --executability --acls --whole-file \
       --ignore-times --exclude-from="$RSYNC_EXCLUDE" \
       --human-readable \
-      "$SOURCE_DIR/" "$USERNAME@$MAC_BUILD_MACHINE_IPADDRESS:$HOME/minetest/"
+      "$SOURCE_DIR/" "$USERANDHOST:$HOME/minetest/"
 echo ""
 echo "Done"
 

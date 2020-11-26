@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+USERNAME=$(whoami)
+USERANDHOST=$("$SCRIPT_DIR/info/get_remote_user_and_host")
+HOSTNAME=$("$SCRIPT_DIR/info/get_hostname")
+
+POWERED_OFF=$("$SCRIPT_DIR/info/is_powered_off")
+if [[ $POWERED_OFF == "NO" ]]; then
+    >&2 echo "Please run this script with $HOSTNAME initially powered off"
+    exit 1
+fi
+
+echo "Enabling Remote Display for $HOSTNAME"
+VBoxManage modifyvm "$HOSTNAME" --vrde on
+
+echo "Starting virtual machine $HOSTNAME"
+"$SCRIPT_DIR/start"
+
+echo "Waiting until it is running"
+"$SCRIPT_DIR/info/wait_until_running"
+
+
+KEYFILE="$HOME/.ssh/id_rsa_minetest_build_machine"
+
+if [[ ! -f "$KEYFILE.pub" ]]; then
+  echo "Creating an ssh authentication key for $USERANDHOST"
+  ssh-keygen -t rsa -f "$KEYFILE" -q -N ""
+else
+  echo "Using previously created ssh authentication key for $USERANDHOST"
+fi
+PUBKEY=$(cat "$KEYFILE.pub")
+
+echo "Performing remote post-installation configuration on $HOSTNAME, as $USERNAME"
+ssh \
+ -F /dev/null \
+ -o UserKnownHostsFile=/dev/null \
+ -o StrictHostKeyChecking=no \
+ -o CheckHostIP=no \
+ -o LogLevel=ERROR \
+ "$USERANDHOST" \
+ "bash -s" <<-END_OF_COMMANDS
+    echo "... ssh'd into $USERANDHOST"
+
+    echo "... sudoers"
+    function maybe_make_current_user_sudoer() {
+        if [[ ! -f "/private/etc/sudoers.d/$USERNAME" ]]; then
+          echo "..... adding $USERNAME as a sudoer that does not require a password"
+          sudo --login --user root /bin/bash -c \
+          "sudo echo \"$USERNAME ALL=(ALL) NOPASSWD: ALL\" > /private/etc/sudoers.d/$USERNAME && chown root:wheel /private/etc/sudoers.d/$USERNAME"
+        else
+          echo "..... $USERNAME has already been added as a sudoer that does not require a password"
+        fi
+    }
+    maybe_make_current_user_sudoer
+
+    echo "... ~/.ssh"
+    function maybe_create_ssh_directory() {
+        if [[ ! -d "/Users/$USERNAME/.ssh" ]]; then
+            echo "..... Creating ~/.ssh directory"
+            mkdir -p "/Users/$USERNAME/.ssh"
+        else
+            echo "..... No need to create ~/.ssh. It already existed."
+        fi
+    }
+    maybe_create_ssh_directory
+
+    echo "... Authorized Key"
+    function maybe_install_authorized_key() {
+        if ! grep -q "$PUBKEY" "/Users/$USERNAME/.ssh/authorized_keys"; then
+            echo "..... Installing authorized key"
+            echo "$PUBKEY" >> "/Users/$USERNAME/.ssh/authorized_keys"
+        else
+            echo "..... Authorized key was already installed"
+        fi
+    }
+    maybe_install_authorized_key
+
+    echo "... Homebrew"
+    function maybe_install_homebrew() {
+        if [[ -z \$(/usr/local/bin/brew --version) ]]; then
+            echo "... Installing Homebrew"
+            # Derived from: https://brew.sh/
+            local HOMEBREW_INSTALLER=\$(mktemp)
+            curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh > \$HOMEBREW_INSTALLER
+            chmod ugo+x \$HOMEBREW_INSTALLER
+            /bin/bash \$HOMEBREW_INSTALLER
+            rm -f \$HOMEBREW_INSTALLER
+        else
+            echo "..... Homebrew is already installed"
+        fi
+    }
+    maybe_install_homebrew
+
+    echo "... Energy Saving"
+    function maybe_disable_energy_saving() {
+        local SETTING=\$1
+        if [[ -z \$(pmset -g | grep -E "^\\s*\\b\$SETTING\\s+0\\s*\$") ]]; then
+            echo "..... disabling energy saving feature '\$SETTING'"
+            sudo pmset -g \$SETTING 0
+        else
+            echo "..... energy saving feature '\$SETTING' was already disabled"
+        fi
+    }
+    maybe_disable_energy_saving disksleep
+    maybe_disable_energy_saving displaysleep
+
+    echo "... Screen Saver"
+    function maybe_disable_screensaver() {
+        local DISABLED=\$(defaults -currentHost read com.apple.screensaver | grep -E "^\\s*idleTime\\s*=\\s*0\\s*;\\s*\$")
+        if [[ -z \$DISABLED ]]; then
+            echo "..... disabling screen saver"
+            sudo defaults -currentHost write com.apple.screensaver idleTime 0
+        else
+            echo "..... the screen saver was already disabled"
+        fi
+    }
+    maybe_disable_screensaver
+
+    echo "... rsync"
+    function update_or_install_rsync() {
+        /usr/local/bin/brew install rsync
+    }
+    update_or_install_rsync
+
+    echo "... disconnecting from $USERANDHOST"
+END_OF_COMMANDS
+
+echo ""
+echo "Done."
+echo ""

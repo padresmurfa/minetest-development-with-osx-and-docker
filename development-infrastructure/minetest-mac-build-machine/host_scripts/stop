@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
+set -e
+set -u
+set -o pipefail
+
+# Determine the directory this script resides in
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+HOSTNAME=$("$SCRIPT_DIR/info/get_hostname")
+
+POWERED_OFF=$("$SCRIPT_DIR/info/is_powered_off")
+if [[ $POWERED_OFF == "YES" ]]; then
+    echo "The virtual machine '$HOSTNAME' is already powered off"
+else
+    echo "Stopping virtual machine '$HOSTNAME'"
+    echo "... sending ACPI power-off signal"
+    VBoxManage controlvm "$HOSTNAME" acpipowerbutton
+    echo "... waiting 10 seconds"
+    sleep 10
+    echo "... switching off the power"
+    VBoxManage controlvm "$HOSTNAME" poweroff
+    echo "... done."
+fi
+

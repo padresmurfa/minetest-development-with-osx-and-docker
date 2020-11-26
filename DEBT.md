@@ -15,6 +15,9 @@ https://medium.com/@BeNitinAgarwal/an-init-system-inside-the-docker-container-38
 
 * There is a travis file with a lua checker in the minetest game. We should run it.
 
+* We should use a config file, rather than hardcoded names and sniping the user's local
+  login name via whoami.
+
 ## Minor
 
 * When mounting the source directory into the minetest server container as read-only, it
