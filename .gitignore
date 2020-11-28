@@ -1,3 +1,7 @@
 .idea
 virtual-machines
 .destination
+development-infrastructure/minetest-server/container/image/lib
+development-infrastructure/minetest-server/container/lib
+development-infrastructure/minetest-server/volume/lib
+development-infrastructure/minetest-server/container/source

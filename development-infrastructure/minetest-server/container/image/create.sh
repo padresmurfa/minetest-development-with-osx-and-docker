@@ -8,6 +8,8 @@ source "$SCRIPT_DIR/lib/header.sh"
 source "$SCRIPT_DIR/lib/user/user.sh"
 # shellcheck disable=SC1090
 source "$LIBRARY_DIRECTORY/symlinks/symlinks.sh"
+# shellcheck disable=SC1090
+source "$LIBRARY_DIRECTORY/git/git.sh"
 
 USER=$(user_username)
 
@@ -18,6 +20,7 @@ function install() {
     rm -rf "$DESTINATION"
   fi
   cp -R "$SOURCE" "$DESTINATION"
+  git_ignore "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts" "$2"
 }
 install "$SCRIPT_DIR/lib" "lib"
 
