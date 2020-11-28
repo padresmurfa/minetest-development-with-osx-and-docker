@@ -28,12 +28,18 @@ function ssh_create_migration_install_authorized_key() {
 #   bash_apply_migration <migration_dir>
 function ssh_apply_migration_install_authorized_key() {
   local MIGRATION_DIR="$1"
-  local USERNAME=$("$MIGRATION_DIR/ssh.username")
+  local USERNAME=$(migrations_get_migration_context "$MIGRATION_DIR")
   local HOMEDIR=$(user_home_of_specific_user "$USERNAME")
+  if [[ -z "$HOMEDIR" ]]; then
+    abort "Could not find home directory for $USERNAME"
+  fi
   if [[ ! -d "$HOMEDIR/.ssh" ]]; then
-    mkdir -p "$HOMEDIR/.ssh"
+    mkdir "$HOMEDIR/.ssh"
   fi
   local PUBKEY=$(cat "$MIGRATION_DIR/ssh.pubkey")
+  if [[ ! -f "$HOMEDIR/.ssh/authorized_keys" ]]; then
+    touch "$HOMEDIR/.ssh/authorized_keys"
+  fi
   if ! grep -q "$PUBKEY" "$HOMEDIR/.ssh/authorized_keys"; then
     echo "$PUBKEY" >> "$HOMEDIR/.ssh/authorized_keys"
   fi

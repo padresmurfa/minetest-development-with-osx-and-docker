@@ -20,14 +20,18 @@ source "$LIBRARY_DIRECTORY/migrations/migrations.sh"
 synchronizer_init "$ROOT_DIRECTORY/.destination/source/" "$ROOT_DIRECTORY/.destination/minetest-server/source"
   migrations_init "$ROOT_DIRECTORY/.destination/minetest-server/migrations"
   synchronizer_create_migration
-  migrations_apply
   migrations_teardown
 synchronizer_teardown
 
 synchronizer_init "$ROOT_DIRECTORY/.destination/source/" "$ROOT_DIRECTORY/.destination/minetest-mac-build-machine/source"
   migrations_init "$ROOT_DIRECTORY/.destination/minetest-mac-build-machine/migrations"
   synchronizer_create_migration
-  migrations_apply
   migrations_teardown
 synchronizer_teardown
+
+# shellcheck disable=SC1090
+source "$LIBRARY_DIRECTORY/migrations/dispatcher.sh"
+
+migrations_apply
+
 

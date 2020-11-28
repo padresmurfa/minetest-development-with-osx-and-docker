@@ -23,3 +23,32 @@ function create_symlink() {
 
     popd >> /dev/null || exit 2>&1
 }
+
+# create_migration:
+#   creates a migration that creates a new symlink
+# usage:
+#   symlink_create_migration
+function symlink_create_migration() {
+    local LINK="$1"
+    local TARGET="$2"
+    # shellcheck disable=SC2155
+    local MIGRATION_DIR=$(migrations_create_next_migration "symlink_apply_migration" "")
+    echo "$LINK" > "$MIGRATION_DIR/link"
+    echo "$TARGET" > "$MIGRATION_DIR/target"
+}
+
+
+# apply_migration:
+#   applies a migration
+# usage:
+#   symlink_apply_migration <migration_dir>
+function symlink_apply_migration() {
+  local MIGRATION_DIR="$1"
+
+  local LINK=$(cat "$MIGRATION_DIR/link")
+  LINK=$(eval "echo $LINK")
+  local TARGET=$(cat "$MIGRATION_DIR/target")
+  TARGET=$(eval "echo $TARGET")
+
+  create_symlink "$LINK" "$TARGET"
+}

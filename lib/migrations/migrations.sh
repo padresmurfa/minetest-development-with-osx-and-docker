@@ -1,6 +1,10 @@
 [[ "${PADRESMURFAS_SMURFY_BASH_LIBRARY:-NOT_IMPORTED}" != "IMPORTED" ]] \
   && echo "Please import lib/header.sh before importing lib/migrations" && exit 1
 
+# must not start with a 0 (which would imply base-b), and must be large enough to ensure that we
+# never run out of migration ids
+LOWEST_LEGAL_MIGRATION_ID="1000000000"
+
 # init:
 #   initializes the migrations library
 # usage:
@@ -31,19 +35,18 @@ function migrations_get_next_unapplied_migration() {
   if [[ -f "$FILENAME" ]]; then
     NEXT_MIGRATION_ID=$(cat "$FILENAME")
   else
-    NEXT_MIGRATION_ID="0"
+    NEXT_MIGRATION_ID="$LOWEST_LEGAL_MIGRATION_ID"
   fi
   FILENAME="$MIGRATIONS_DIRECTORY/.oldest_unapplied_migration_id"
   local UNAPPLIED_MIGRATION_ID
   if [[ -f "$FILENAME" ]]; then
     UNAPPLIED_MIGRATION_ID=$(cat "$FILENAME")
   else
-    UNAPPLIED_MIGRATION_ID="0"
+    UNAPPLIED_MIGRATION_ID="$LOWEST_LEGAL_MIGRATION_ID"
   fi
   if [[ "$NEXT_MIGRATION_ID" == "$UNAPPLIED_MIGRATION_ID" ]]; then
     echo ""
   else
-    UNAPPLIED_MIGRATION_ID=$(printf "%05d" "$UNAPPLIED_MIGRATION_ID")
     echo "$MIGRATIONS_DIRECTORY/$UNAPPLIED_MIGRATION_ID"
   fi
 }
@@ -59,9 +62,8 @@ function migrations_applied_migration() {
   if [[ -f "$FILENAME" ]]; then
     EXPECTED_MIGRATION_ID=$(cat "$FILENAME")
   else
-    EXPECTED_MIGRATION_ID="0"
+    EXPECTED_MIGRATION_ID="$LOWEST_LEGAL_MIGRATION_ID"
   fi
-  EXPECTED_MIGRATION_ID=$(printf "%05d" "$EXPECTED_MIGRATION_ID")
   local EXPECTED_MIGRATION_DIR="$MIGRATIONS_DIRECTORY/$EXPECTED_MIGRATION_ID"
   if [[ "$EXPECTED_MIGRATION_DIR" != "$ACTUALLY_APPLIED_MIGRATION_DIR" ]]; then
     abort "expected migration dir != actual migration dir"
@@ -76,7 +78,7 @@ function migrations_applied_migration() {
 #   ID=$(migrations_reserve_next_migration_id)
 function migrations_reserve_next_migration_id() {
   local FILENAME="$MIGRATIONS_DIRECTORY/.next_migration_id"
-  local NEXT_MIGRATION_ID="0"
+  local NEXT_MIGRATION_ID="$LOWEST_LEGAL_MIGRATION_ID"
   if [[ -f "$FILENAME" ]]; then
     NEXT_MIGRATION_ID=$(cat "$FILENAME")
   fi
@@ -96,7 +98,6 @@ function migrations_create_next_migration() {
   MIGRATION_CONTEXT="$2"
   local MIGRATION_ID
   MIGRATION_ID="$(migrations_reserve_next_migration_id)"
-  MIGRATION_ID=$(printf "%05d" "$MIGRATION_ID")
   local MIGRATION_DIR="$MIGRATIONS_DIRECTORY/$MIGRATION_ID"
   mkdir "$MIGRATION_DIR" >> /dev/null
   echo "$MIGRATION_TYPE" > "$MIGRATION_DIR/type"
@@ -126,20 +127,4 @@ function migrations_get_migration_context() {
 function migrations_get_migration_type() {
   local MIGRATION_DIR="$1"
   cat "$MIGRATION_DIR/type"
-}
-
-# apply:
-#   applies all unapplied migrations
-# usage:
-#   migrations_apply
-function migrations_apply() {
-  while [[ 1 -eq 1 ]]; do
-    UNAPPLIED_MIGRATION_DIR=$(migrations_get_next_unapplied_migration)
-    if [[ -z "$UNAPPLIED_MIGRATION_DIR" ]]; then
-      break
-    fi
-    local MIGRATION_TYPE=$(migrations_get_migration_type "$UNAPPLIED_MIGRATION_DIR")
-    eval "$MIGRATION_TYPE" "$UNAPPLIED_MIGRATION_DIR"
-    migrations_applied_migration "$UNAPPLIED_MIGRATION_DIR"
-  done
 }

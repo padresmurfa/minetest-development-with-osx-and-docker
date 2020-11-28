@@ -14,20 +14,36 @@ source "$LIBRARY_DIRECTORY/git/git.sh"
 source "$LIBRARY_DIRECTORY/copy/copy.sh"
 # shellcheck disable=SC1090
 source "$LIBRARY_DIRECTORY/ssh/ssh.sh"
+# shellcheck disable=SC1090
+source "$LIBRARY_DIRECTORY/service/service.sh"
 
 USERNAME=$(user_username)
 
-function install() {
+function install_lib() {
   local SOURCE=$1
   local LIBRARY=$2
   local DESTINATION="$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts/$LIBRARY"
   copy_directory_not_symlink "$SOURCE" "$DESTINATION"
   git_ignore "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts" "$LIBRARY"
 }
-install "$SCRIPT_DIR/lib" "lib"
+install_lib "$SCRIPT_DIR/lib" "lib"
 
-migrations_init "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts/dynamic_migrations"
-ssh_create_migration_install_authorized_key "$USERNAME" "minetest_server"
+function create_core_script_link() {
+  symlink_create_migration "\$HOME/$1" "\$HOME/.container-scripts/core_scripts/$1.sh"
+}
+
+rm -rf "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts/migrations/*"
+migrations_init "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts/migrations"
+
+  ssh_create_migration_install_authorized_key "$USERNAME" "minetest_server"
+  create_core_script_link "build"
+  create_core_script_link "clean"
+  create_core_script_link "sync"
+  create_core_script_link "deploy"
+  create_core_script_link "run"
+  service_start_create_migration "rsyslog"
+  service_start_create_migration "ssh"
+
 migrations_teardown
 
 PASSWORD="password"
