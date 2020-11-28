@@ -8,7 +8,7 @@
 function git_ignore() {
   local GITIGNORE_FILENAME="$1/.gitignore"
   local PATTERN=$2
-  local FOUND=$(grep -q "$PATTERN" "$GITIGNORE_FILENAME")
+  local FOUND=$(grep "$PATTERN" "$GITIGNORE_FILENAME")
   if [[ -z "$FOUND" ]]; then
     echo "$PATTERN" >> "$GITIGNORE_FILENAME"
   fi

@@ -15,14 +15,15 @@ USER=$(user_username)
 
 function install() {
   local SOURCE=$1
-  local DESTINATION="$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts/$2"
+  local LIBRARY=$2
+  local DESTINATION="$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts/$LIBRARY"
   if [[ -L "$DESTINATION" ]]; then
     unlink "$DESTINATION"
   elif [[ -d "$DESTINATION" ]]; then
     rm -rf "$DESTINATION"
   fi
   cp -RL "$SOURCE" "$DESTINATION"
-  git_ignore "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts" "$2"
+  git_ignore "$SCRIPT_DIR/copy_to_container/home/USERNAME/.container-scripts" "$LIBRARY"
 }
 install "$SCRIPT_DIR/lib" "lib"
 
