@@ -5,10 +5,9 @@ set -e
 set -u
 set -o pipefail
 
-USERNAME=$(whoami)
-
 # Determine the directory this script resides in
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-HOSTNAME=$("$SCRIPT_DIR/get_hostname")
+HOSTNAME=$("$SCRIPT_DIR/hostname")
+USERNAME=$("$SCRIPT_DIR/username")
 
 echo "$USERNAME@$HOSTNAME"

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
-set -e
-set -u
-set -o pipefail
-
-# if the docker container is running, a string will be returned, otherwise empty will be returned
-docker ps --quiet --filter "name=minetest"

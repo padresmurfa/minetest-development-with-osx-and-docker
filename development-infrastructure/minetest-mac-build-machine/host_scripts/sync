@@ -9,7 +9,7 @@ set -o pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SOURCE_DIR="$SCRIPT_DIR/../../../source"
 
-USERANDHOST=$("$SCRIPT_DIR/info/get_remote_user_and_host")
+USERANDHOST=$("$SCRIPT_DIR/info/build_machine/username_and_hostname")
 
 ############################################################################################
 # SYNC FILES TO BUILD

@@ -123,4 +123,4 @@ EXPOSE 11001
 # running for the lifetime of the container. Note that this is not a good system, so a
 # better one should be found.
 #
-ENTRYPOINT ["/bin/bash", "-ci", "./.container-scripts/on_docker_container_started && tail -f /dev/null"]
+ENTRYPOINT ["/bin/bash", "-ci", "./.container-scripts/on_docker_container_started.sh && tail -f /dev/null"]

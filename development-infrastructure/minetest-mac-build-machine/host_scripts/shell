@@ -7,9 +7,9 @@ set -o pipefail
 
 # Determine the directory this script resides in
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-USERANDHOST=$("$SCRIPT_DIR/info/get_remote_user_and_host")
+USERANDHOST=$("$SCRIPT_DIR/info/build_machine/username_and_hostname")
 
-POWERED_OFF=$("$SCRIPT_DIR/info/is_powered_off")
+POWERED_OFF=$("$SCRIPT_DIR/info/build_machine/is_powered_off")
 if [[ $POWERED_OFF == "YES" ]]; then
     echo ""
 fi

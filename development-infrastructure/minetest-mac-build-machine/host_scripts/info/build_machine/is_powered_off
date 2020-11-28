@@ -7,11 +7,10 @@ set -o pipefail
 
 # Determine the directory this script resides in
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+HOSTNAME=$("$SCRIPT_DIR/hostname")
 
-IS_RUNNING=$("$SCRIPT_DIR/info/is_docker_container_running")
-if [[ -n $IS_RUNNING ]]; then
-  docker exec --interactive --tty minetest /bin/bash
+if [[ "$(VBoxManage showvminfo "$HOSTNAME")" =~ State:[\ \t]*powered\ off ]]; then
+    echo "YES"
 else
-  >&2 echo "The 'minetest' container was not running"
-  exit 1
+    echo "NO"
 fi

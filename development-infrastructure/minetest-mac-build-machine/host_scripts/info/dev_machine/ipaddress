@@ -1,0 +1,12 @@
+#!/bin/bash
+
+WIRED=$(ipconfig getifaddr en1)
+WIRELESS=$(ipconfig getifaddr en0)
+
+if [[ -n "$WIRED" ]]; then
+    echo "$WIRED"
+elif [[ -n "$WIRELESS"  ]]; then
+    echo "$WIRELESS"
+else
+    exit 1
+fi

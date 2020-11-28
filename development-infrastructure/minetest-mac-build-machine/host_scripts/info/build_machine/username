@@ -5,4 +5,4 @@ set -e
 set -u
 set -o pipefail
 
-docker ps --filter "name=minetest"
+whoami

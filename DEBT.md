@@ -18,6 +18,12 @@ https://medium.com/@BeNitinAgarwal/an-init-system-inside-the-docker-container-38
 * We should use a config file, rather than hardcoded names and sniping the user's local
   login name via whoami.
 
+* we should not use file-system shares from dev-hosts to build-hosts. This pattern requires different
+  tooling for each host, and does not work over the internet, thus we cannot e.g. have a remote mac
+  build machine or linux server.
+
+* we should apply changes to machines via a migration pattern
+
 ## Minor
 
 * When mounting the source directory into the minetest server container as read-only, it
@@ -27,3 +33,9 @@ https://medium.com/@BeNitinAgarwal/an-init-system-inside-the-docker-container-38
 * revise the funky directory/name thingy in deploy for minetest_game. That's just some git repo name issue.
 
 * only one minetest server should be running at any given time, as we only expose one port
+
+* funky ../../.. type imports and execs
+
+* make assert function in header.sh
+
+* docker run is not libbified, and likewise build

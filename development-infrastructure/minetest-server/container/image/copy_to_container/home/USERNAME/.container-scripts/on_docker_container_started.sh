@@ -18,8 +18,8 @@ sudo service rsyslog start
 # CORE SCRIPTS
 ############################################################################################
 
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/build" "$HOME/build"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/clean" "$HOME/clean"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/sync" "$HOME/sync"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/deploy" "$HOME/deploy"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/run" "$HOME/run"
+cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/build.sh" "$HOME/build"
+cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/clean.sh" "$HOME/clean"
+cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/sync.sh" "$HOME/sync"
+cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/deploy.sh" "$HOME/deploy"
+cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/run.sh" "$HOME/run"

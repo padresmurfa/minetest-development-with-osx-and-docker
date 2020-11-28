@@ -7,37 +7,62 @@ set -o pipefail
 # Determine the directory this script resides in
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-USERNAME=$(whoami)
-USERANDHOST=$("$SCRIPT_DIR/info/get_remote_user_and_host")
-HOSTNAME=$("$SCRIPT_DIR/info/get_hostname")
+USERNAME=$("$SCRIPT_DIR/info/dev_machine/username")
+DEVHOST_LOCALHOSTNAME=$("$SCRIPT_DIR/info/dev_machine/localhostname")
+USERANDHOST=$("$SCRIPT_DIR/info/build_machine/username_and_hostname")
+HOSTNAME=$("$SCRIPT_DIR/info/build_machine/hostname")
 
-POWERED_OFF=$("$SCRIPT_DIR/info/is_powered_off")
-if [[ $POWERED_OFF == "NO" ]]; then
-    >&2 echo "Please run this script with $HOSTNAME initially powered off"
-    exit 1
+PASSWORD=$( python -c "import random; print(\"$DEVHOST_LOCALHOSTNAME $HOSTNAME\" + str(random.random()))" | sha256sum | base64 | head -c 31 ; echo )
+function create_or_update_user_on_devhost_for_build_host() {
+    if [[ -d "/Users/$HOSTNAME" ]]; then
+        echo "✅ Deleting pre-existing user '$HOSTNAME'"
+        sudo sysadminctl -deleteUser "$HOSTNAME"
+    else
+        echo "✅ User '$HOSTNAME' doesn't exist. Creating."
+    fi
+    sudo sysadminctl -addUser "$HOSTNAME" -fullName "$HOSTNAME" -password "$PASSWORD" -home "/Users/$HOSTNAME"
+    sudo createhomedir -c -u "$HOSTNAME"
+}
+create_or_update_user_on_devhost_for_build_host
+
+POWERED_OFF=$("$SCRIPT_DIR/info/build_machine/is_powered_off")
+function maybe_enable_remote_display() {
+    set +e
+    local ENABLED_IF_EMPTY=$(vboxmanage showvminfo "$HOSTNAME" | grep -i "vrde:\s*enabled")
+    set -e
+    if [[ ! -z "$ENABLED_IF_EMPTY" ]]; then
+        echo "️️☑️ Remote Display is already enabled for $HOSTNAME"
+    else
+        echo "✅ Enabling Remote Display for $HOSTNAME"
+        if [[ $POWERED_OFF == "NO" ]]; then
+            >&2 echo "Cannot enable Remote Display for $HOSTNAME while it is running. Please stop the virtual machine first, and then try again"
+            exit 1
+        fi
+        VBoxManage modifyvm "$HOSTNAME" --vrde on
+    fi
+}
+maybe_enable_remote_display
+
+if [[ $POWERED_OFF == "YES" ]]; then
+    echo "✅ Starting virtual machine '$HOSTNAME' prior to continuing"
+    "$SCRIPT_DIR/start"
+    echo "✅ Waiting until it is running"
+    "$SCRIPT_DIR/info/build_machine/wait_until_running"
+else
+    echo "️️☑️ Virtual machine '$HOSTNAME' is running"
 fi
-
-echo "Enabling Remote Display for $HOSTNAME"
-VBoxManage modifyvm "$HOSTNAME" --vrde on
-
-echo "Starting virtual machine $HOSTNAME"
-"$SCRIPT_DIR/start"
-
-echo "Waiting until it is running"
-"$SCRIPT_DIR/info/wait_until_running"
-
 
 KEYFILE="$HOME/.ssh/id_rsa_minetest_build_machine"
 
 if [[ ! -f "$KEYFILE.pub" ]]; then
-  echo "Creating an ssh authentication key for $USERANDHOST"
+  echo "✅ Creating an ssh authentication key for $USERANDHOST"
   ssh-keygen -t rsa -f "$KEYFILE" -q -N ""
 else
-  echo "Using previously created ssh authentication key for $USERANDHOST"
+  echo "️️☑️ Using previously created ssh authentication key for $USERANDHOST"
 fi
 PUBKEY=$(cat "$KEYFILE.pub")
 
-echo "Performing remote post-installation configuration on $HOSTNAME, as $USERNAME"
+echo "✅ Performing remote post-installation configuration on $HOSTNAME, as $USERNAME"
 ssh \
  -F /dev/null \
  -o UserKnownHostsFile=/dev/null \
@@ -51,11 +76,11 @@ ssh \
     echo "... sudoers"
     function maybe_make_current_user_sudoer() {
         if [[ ! -f "/private/etc/sudoers.d/$USERNAME" ]]; then
-          echo "..... adding $USERNAME as a sudoer that does not require a password"
+          echo "✅ ..... adding $USERNAME as a sudoer that does not require a password"
           sudo --login --user root /bin/bash -c \
           "sudo echo \"$USERNAME ALL=(ALL) NOPASSWD: ALL\" > /private/etc/sudoers.d/$USERNAME && chown root:wheel /private/etc/sudoers.d/$USERNAME"
         else
-          echo "..... $USERNAME has already been added as a sudoer that does not require a password"
+          echo "️️☑️ ..... $USERNAME has already been added as a sudoer that does not require a password"
         fi
     }
     maybe_make_current_user_sudoer
@@ -63,10 +88,10 @@ ssh \
     echo "... ~/.ssh"
     function maybe_create_ssh_directory() {
         if [[ ! -d "/Users/$USERNAME/.ssh" ]]; then
-            echo "..... Creating ~/.ssh directory"
+            echo "✅ ..... Creating ~/.ssh directory"
             mkdir -p "/Users/$USERNAME/.ssh"
         else
-            echo "..... No need to create ~/.ssh. It already existed."
+            echo "️️☑️ ..... No need to create ~/.ssh. It already existed."
         fi
     }
     maybe_create_ssh_directory
@@ -74,10 +99,10 @@ ssh \
     echo "... Authorized Key"
     function maybe_install_authorized_key() {
         if ! grep -q "$PUBKEY" "/Users/$USERNAME/.ssh/authorized_keys"; then
-            echo "..... Installing authorized key"
+            echo "✅ ..... Installing authorized key"
             echo "$PUBKEY" >> "/Users/$USERNAME/.ssh/authorized_keys"
         else
-            echo "..... Authorized key was already installed"
+            echo "️️☑️ ..... Authorized key was already installed"
         fi
     }
     maybe_install_authorized_key
@@ -85,7 +110,7 @@ ssh \
     echo "... Homebrew"
     function maybe_install_homebrew() {
         if [[ -z \$(/usr/local/bin/brew --version) ]]; then
-            echo "... Installing Homebrew"
+            echo "✅ ... Installing Homebrew"
             # Derived from: https://brew.sh/
             local HOMEBREW_INSTALLER=\$(mktemp)
             curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh > \$HOMEBREW_INSTALLER
@@ -93,19 +118,25 @@ ssh \
             /bin/bash \$HOMEBREW_INSTALLER
             rm -f \$HOMEBREW_INSTALLER
         else
-            echo "..... Homebrew is already installed"
+            echo "️️☑️ ..... Homebrew is already installed"
         fi
     }
     maybe_install_homebrew
+
+    echo "... rsync"
+    function update_or_install_rsync() {
+        HOMEBREW_NO_AUTO_UPDATE=1 /usr/local/bin/brew install -q rsync
+    }
+    update_or_install_rsync
 
     echo "... Energy Saving"
     function maybe_disable_energy_saving() {
         local SETTING=\$1
         if [[ -z \$(pmset -g | grep -E "^\\s*\\b\$SETTING\\s+0\\s*\$") ]]; then
-            echo "..... disabling energy saving feature '\$SETTING'"
+            echo "✅ ..... disabling energy saving feature '\$SETTING'"
             sudo pmset -g \$SETTING 0
         else
-            echo "..... energy saving feature '\$SETTING' was already disabled"
+            echo "️️☑️ ..... energy saving feature '\$SETTING' was already disabled"
         fi
     }
     maybe_disable_energy_saving disksleep
@@ -115,21 +146,43 @@ ssh \
     function maybe_disable_screensaver() {
         local DISABLED=\$(defaults -currentHost read com.apple.screensaver | grep -E "^\\s*idleTime\\s*=\\s*0\\s*;\\s*\$")
         if [[ -z \$DISABLED ]]; then
-            echo "..... disabling screen saver"
+            echo "✅ ..... disabling screen saver"
             sudo defaults -currentHost write com.apple.screensaver idleTime 0
         else
-            echo "..... the screen saver was already disabled"
+            echo "️️☑️ ..... the screen saver was already disabled"
         fi
     }
     maybe_disable_screensaver
 
-    echo "... rsync"
-    function update_or_install_rsync() {
-        /usr/local/bin/brew install rsync
+    echo "... minetest-source"
+    function maybe_mount_minetest_source() {
+        if [[ ! -d "/Users/$USERNAME/source" ]]; then
+            echo "✅ ..... creating mount point '/Users/$USERNAME/source'"
+            mkdir "/Users/$USERNAME/source"
+        else
+            echo "️️☑️ ..... no need to create a mount point, as it already exists ('/Users/$USERNAME/source')"
+        fi
+        local NSMBCONF="/Users/$USERNAME/Library/Preferences/nsmb.conf"
+        if [[ -f "\$NSMBCONF" ]]; then
+            echo "✅ ..... updating credentials for '//$DEVHOST_LOCALHOSTNAME/minetest-source'"
+        else
+            echo "✅ ..... creating credentials for '//$DEVHOST_LOCALHOSTNAME/minetest-source'"
+        fi
+        echo "[$DEVHOST_LOCALHOSTNAME]" > "\$NSMBCONF"
+        echo "username=$HOSTNAME" >> "\$NSMBCONF"
+        echo "password=$PASSWORD" >> "\$NSMBCONF"
+        if [[ -f "/Users/$USERNAME/source/.gitignore" ]]; then
+            echo "✅️ ..... remounting '//$DEVHOST_LOCALHOSTNAME/minetest-source' with new credentials"
+            sudo diskutil unmount force "/Users/$USERNAME/source"
+        else
+            echo "✅ ..... mounting '//$DEVHOST_LOCALHOSTNAME/minetest-source' at '/Users/$USERNAME/source'"
+        fi
+        echo "mounting via mount_smbfs -N -o nobrowse,nonotification '//$HOSTNAME:$PASSWORD@$DEVHOST_LOCALHOSTNAME/share_with_build_machine' '/Users/$USERNAME/source'"
+        # mount_smbfs -N -o nobrowse,nonotification "//$HOSTNAME:$PASSWORD@$DEVHOST_LOCALHOSTNAME/share_with_build_machine" "/Users/$USERNAME/source"
     }
-    update_or_install_rsync
+    maybe_mount_minetest_source
 
-    echo "... disconnecting from $USERANDHOST"
+    echo "... ✅ disconnecting from $USERANDHOST"
 END_OF_COMMANDS
 
 echo ""
