@@ -5,9 +5,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$SCRIPT_DIR/lib/header.sh"
 # shellcheck disable=SC1090
-source "$SCRIPT_DIR/lib/docker/container/container.sh"
+source "$LIBRARY_DIRECTORY/docker/container/container.sh"
 # shellcheck disable=SC1090
-source "$SCRIPT_DIR/lib/user/user.sh"
+source "$LIBRARY_DIRECTORY/user/user.sh"
 
 CONTAINER_NAME="minetest"
 
@@ -25,6 +25,7 @@ else
   # ... using a fixed name, minetest, for the running container
   # ... granting read-only access to the shared_with_container folder
   # ... exposing the minetest server on port 11001
+  # ... exposing the minetest server's ssh port as 11002
   # ... and selecting our docker image, which is named minetest-development-with-osx-and-docker-image
   docker run \
     --detach --tty \
@@ -32,6 +33,7 @@ else
     --name "$CONTAINER_NAME" \
     --publish 127.0.0.1:11001:11001/tcp \
     --publish 127.0.0.1:11001:11001/udp \
+    --publish 127.0.0.1:11002:22/tcp \
     --mount "type=bind,source=$SOURCE_DIRECTORY,destination=/home/$USERNAME/.shared_from_host,readonly" \
     --mount "type=volume,source=minetest-source,destination=/home/$USERNAME/source" \
     --mount "type=volume,source=minetest-servers,destination=/home/$USERNAME/servers" \

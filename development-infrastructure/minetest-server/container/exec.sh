@@ -5,9 +5,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$SCRIPT_DIR/lib/header.sh"
 # shellcheck disable=SC1090
-source "$SCRIPT_DIR/lib/docker/container/container.sh"
+source "$LIBRARY_DIRECTORY/docker/container/container.sh"
 # shellcheck disable=SC1090
-source "$SCRIPT_DIR/lib/user/user.sh"
+source "$LIBRARY_DIRECTORY/user/user.sh"
 
 COMMAND=$1
 CONTAINER_NAME="minetest"

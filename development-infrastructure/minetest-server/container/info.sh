@@ -11,8 +11,11 @@ CONTAINER_NAME="minetest"
 
 IS_RUNNING=$(docker_container_is_running_by_name "$CONTAINER_NAME")
 if [[ -z $IS_RUNNING ]]; then
-  exit_with_message "The '$CONTAINER_NAME' container was not running"
+  exit_with_message "The '$CONTAINER_NAME' container is not running"
 else
-  docker_container_stop "$CONTAINER_NAME"
-  echo "The '$CONTAINER_NAME' container has been stopped"
+  echo "Some information about the '$CONTAINER_NAME' docker container:"
+  CONTAINER_ID=$(docker_container_id_from_name "$CONTAINER_NAME")
+  echo "... container ID: $CONTAINER_ID"
+  CONTAINER_IPADDRESS=$(docker_container_ipaddress_from_name "$CONTAINER_NAME")
+  echo "... container IPAddress: $CONTAINER_IPADDRESS"
 fi

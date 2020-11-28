@@ -1,25 +1,25 @@
 #!/bin/bash
 
-# see e.g. https://gist.github.com/mohanpedala/1e2ff5661761d3abd0385e8223e16425 for details
-set -e
-set -u
-set -o pipefail
-# determine the directory this script resides in
+# Determine the directory this script resides in
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# shellcheck disable=SC1090
+source "$SCRIPT_DIR/lib/header.sh"
+# shellcheck disable=SC1090
+source "$LIBRARY_DIRECTORY/service/service.sh"
+# shellcheck disable=SC1090
+source "$LIBRARY_DIRECTORY/migrations/migrations.sh"
+# shellcheck disable=SC1090
+source "$LIBRARY_DIRECTORY/bash/bash.sh"
 
-############################################################################################
-# SERVICES
-#   start services, e.g./i.e. rsyslog
-############################################################################################
+# make lib available to migrations LIBRARY_DIRECTORY
+export LIBRARY_DIRECTORY
+CONTAINER_SCRIPTS="$SCRIPT_DIR"
+export CONTAINER_SCRIPTS
 
-sudo service rsyslog start
+migrations_init "$SCRIPT_DIR/static_migrations"
+migrations_apply
+migrations_teardown
 
-############################################################################################
-# CORE SCRIPTS
-############################################################################################
-
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/build.sh" "$HOME/build"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/clean.sh" "$HOME/clean"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/sync.sh" "$HOME/sync"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/deploy.sh" "$HOME/deploy"
-cp --force --symbolic-link "$SCRIPT_DIR/core_scripts/run.sh" "$HOME/run"
+migrations_init "$SCRIPT_DIR/dynamic_migrations"
+migrations_apply
+migrations_teardown

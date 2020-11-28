@@ -106,11 +106,32 @@ function migrations_create_next_migration() {
   echo "$MIGRATION_DIR"
 }
 
+# get_migration_context:
+#   retrieves the generic migration context
+# usage:
+#   CONTEXT=$(migrations_get_migration_context "migration_dir")
+function migrations_get_migration_context() {
+  local MIGRATION_DIR="$1"
+  if [[ -f "$MIGRATION_DIR/context" ]]; then
+    cat "$MIGRATION_DIR/context"
+  else
+    echo ""
+  fi
+}
+
+# get_migration_type:
+#   retrieves the migration type
+# usage:
+#   TYPE=$(migrations_get_migration_type "migration_dir")
 function migrations_get_migration_type() {
   local MIGRATION_DIR="$1"
   cat "$MIGRATION_DIR/type"
 }
 
+# apply:
+#   applies all unapplied migrations
+# usage:
+#   migrations_apply
 function migrations_apply() {
   while [[ 1 -eq 1 ]]; do
     UNAPPLIED_MIGRATION_DIR=$(migrations_get_next_unapplied_migration)

@@ -18,9 +18,9 @@ RUN sed -i 's/DIR_MODE=0755/DIR_MODE=0750/g' /etc/adduser.conf
 
 RUN apt-get update \
  && apt-get install --assume-yes \
-    rsyslog sudo man \
-    dnsutils curl less wget zip unzip vim \
-    git \
+    rsyslog sudo ssh openssh-server \
+    dnsutils curl wget zip unzip \
+    git less vim man \
     ruby \
     g++ make libc6-dev libirrlicht-dev cmake libbz2-dev libpng-dev libjpeg-dev \
       libxxf86vm-dev libgl1-mesa-dev libsqlite3-dev libogg-dev libvorbis-dev libopenal-dev \
@@ -67,10 +67,12 @@ RUN chsh --shell /bin/bash \
 
 ARG USERNAME
 ARG UID
+ARG PASSWORD
 RUN addgroup $USERNAME \
  && adduser --shell /bin/bash --uid $UID --ingroup $USERNAME $USERNAME \
  && usermod -aG sudo $USERNAME \
- && echo "$USERNAME     ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+ && echo "$USERNAME     ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+ && echo "davidbrandt:password" | sudo chpasswd
 USER $USERNAME:$USERNAME
 WORKDIR /home/$USERNAME
 
@@ -107,6 +109,9 @@ COPY --chown=$USERNAME:$USERNAME \
 
 # minetest server
 EXPOSE 11001
+
+# ssh
+EXPOSE 11002
 
 ############################################################################################
 # ENTRYPOINT
